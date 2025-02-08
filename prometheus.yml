@@ -1,0 +1,36 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'controller'
+    static_configs:
+      - targets: ['controller:8001']
+
+  - job_name: 'product_owner'
+    static_configs:
+      - targets: ['product_owner:8002']
+
+  - job_name: 'agent_developer'
+    static_configs:
+      - targets: ['agent_developer:8003']
+
+  - job_name: 'integration_engineer'
+    static_configs:
+      - targets: ['integration_engineer:8004']
+
+  - job_name: 'refactoring'
+    static_configs:
+      - targets: ['refactoring:8005']
+
+  - job_name: 'doc_writer'
+    static_configs:
+      - targets: ['doc_writer:8006']
+
+  - job_name: 'qa_tester'
+    static_configs:
+      - targets: ['qa_tester:8007']
+
+  - job_name: 'code_reviewer'
+    static_configs:
+      - targets: ['code_reviewer:8008']

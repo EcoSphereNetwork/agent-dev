@@ -1,0 +1,240 @@
+version: '3.8'
+
+services:
+  # Base image build
+  base:
+    build:
+      context: .
+      dockerfile: docker/base/Dockerfile
+    image: agent-dev-base:latest
+
+  # Controller (Scrum Master) Agent
+  controller:
+    build:
+      context: .
+      dockerfile: docker/controller/Dockerfile
+    depends_on:
+      - base
+      - redis
+      - chromadb
+    ports:
+      - "8001:8001"
+    environment:
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - REDIS_URL=redis://redis:6379
+      - CHROMA_URL=http://chromadb:8000
+      - OLLAMA_URL=http://ollama:11434
+    volumes:
+      - ./data/controller:/app/data
+    networks:
+      - agent-net
+
+  # Product Owner Agent
+  product_owner:
+    build:
+      context: .
+      dockerfile: docker/product_owner/Dockerfile
+    depends_on:
+      - base
+      - redis
+      - chromadb
+    ports:
+      - "8002:8002"
+    environment:
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - REDIS_URL=redis://redis:6379
+      - CHROMA_URL=http://chromadb:8000
+      - OLLAMA_URL=http://ollama:11434
+    volumes:
+      - ./data/product_owner:/app/data
+    networks:
+      - agent-net
+
+  # Agent Developer
+  agent_developer:
+    build:
+      context: .
+      dockerfile: docker/agent_developer/Dockerfile
+    depends_on:
+      - base
+      - redis
+      - chromadb
+    ports:
+      - "8003:8003"
+    environment:
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - REDIS_URL=redis://redis:6379
+      - CHROMA_URL=http://chromadb:8000
+      - OLLAMA_URL=http://ollama:11434
+    volumes:
+      - ./data/agent_developer:/app/data
+    networks:
+      - agent-net
+
+  # Integration Engineer Agent
+  integration_engineer:
+    build:
+      context: .
+      dockerfile: docker/integration_engineer/Dockerfile
+    depends_on:
+      - base
+      - redis
+      - chromadb
+    ports:
+      - "8004:8004"
+    environment:
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - REDIS_URL=redis://redis:6379
+      - CHROMA_URL=http://chromadb:8000
+      - OLLAMA_URL=http://ollama:11434
+    volumes:
+      - ./data/integration_engineer:/app/data
+    networks:
+      - agent-net
+
+  # Refactoring Agent
+  refactoring:
+    build:
+      context: .
+      dockerfile: docker/refactoring/Dockerfile
+    depends_on:
+      - base
+      - redis
+      - chromadb
+    ports:
+      - "8005:8005"
+    environment:
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - REDIS_URL=redis://redis:6379
+      - CHROMA_URL=http://chromadb:8000
+      - OLLAMA_URL=http://ollama:11434
+    volumes:
+      - ./data/refactoring:/app/data
+    networks:
+      - agent-net
+
+  # Doc Writer Agent
+  doc_writer:
+    build:
+      context: .
+      dockerfile: docker/doc_writer/Dockerfile
+    depends_on:
+      - base
+      - redis
+      - chromadb
+    ports:
+      - "8006:8006"
+    environment:
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - REDIS_URL=redis://redis:6379
+      - CHROMA_URL=http://chromadb:8000
+      - OLLAMA_URL=http://ollama:11434
+    volumes:
+      - ./data/doc_writer:/app/data
+    networks:
+      - agent-net
+
+  # QA Tester Agent
+  qa_tester:
+    build:
+      context: .
+      dockerfile: docker/qa_tester/Dockerfile
+    depends_on:
+      - base
+      - redis
+      - chromadb
+    ports:
+      - "8007:8007"
+    environment:
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - REDIS_URL=redis://redis:6379
+      - CHROMA_URL=http://chromadb:8000
+      - OLLAMA_URL=http://ollama:11434
+    volumes:
+      - ./data/qa_tester:/app/data
+    networks:
+      - agent-net
+
+  # Code Reviewer Agent
+  code_reviewer:
+    build:
+      context: .
+      dockerfile: docker/code_reviewer/Dockerfile
+    depends_on:
+      - base
+      - redis
+      - chromadb
+    ports:
+      - "8008:8008"
+    environment:
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - REDIS_URL=redis://redis:6379
+      - CHROMA_URL=http://chromadb:8000
+      - OLLAMA_URL=http://ollama:11434
+    volumes:
+      - ./data/code_reviewer:/app/data
+    networks:
+      - agent-net
+
+  # Redis for message queue and caching
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - agent-net
+
+  # ChromaDB for vector storage
+  chromadb:
+    image: chromadb/chroma:latest
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma-data:/chroma/data
+    networks:
+      - agent-net
+
+  # Ollama for local LLMs
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    networks:
+      - agent-net
+
+  # Monitoring with Grafana and Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    networks:
+      - agent-net
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - agent-net
+    depends_on:
+      - prometheus
+
+volumes:
+  redis-data:
+  chroma-data:
+  ollama-data:
+  prometheus-data:
+  grafana-data:
+
+networks:
+  agent-net:
+    driver: bridge
